@@ -16,10 +16,6 @@ jobs:
     strategy:
       matrix:
         python-version: [
-          "2.7",
-          "3.5",
-          "3.6",
-          "3.7",
           "3.8",
           "3.9",
           "3.10",
@@ -30,53 +26,76 @@ jobs:
           "pypy-3.8",
         ]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        exclude:
-          - python-version: "2.7"
-            os: "ubuntu-latest"
-          - python-version: "2.7"
-            os: "windows-latest"
-          - python-version: "2.7"
-            os: "macos-latest"
-          - python-version: "3.5"
-            os: "macos-latest"
-          - python-version: "3.6"
-            os: "macos-latest"
-          - python-version: "3.7"
-            os: "macos-latest"
-          - python-version: "3.5"
-            os: "ubuntu-latest"
-          - python-version: "3.6"
-            os: "ubuntu-latest"
-          - python-version: "3.7"
-            os: "ubuntu-latest"
+        use-container: [false]
         include:
           - python-version: "3.5"
             os: "macos-13"
+            use-container: false
           - python-version: "3.6"
             os: "macos-13"
+            use-container: false
           - python-version: "3.7"
             os: "macos-13"
-          - python-version: "2.7"
-            os: "ubuntu-20.04"
+            use-container: false
           - python-version: "3.5"
-            os: "ubuntu-20.04"
+            os: "windows-latest"
+            use-container: false
           - python-version: "3.6"
-            os: "ubuntu-20.04"
+            os: "windows-latest"
+            use-container: false
           - python-version: "3.7"
-            os: "ubuntu-22.04"
+            os: "windows-latest"
+            use-container: false
+          - python-version: "2.7"
+            os: "ubuntu-latest"
+            use-container: true
+          - python-version: "3.4"
+            os: "ubuntu-latest"
+            use-container: true
+          - python-version: "3.5"
+            os: "ubuntu-latest"
+            use-container: true
+          - python-version: "3.6"
+            os: "ubuntu-latest"
+            use-container: true
+          - python-version: "3.7"
+            os: "ubuntu-latest"
+            use-container: true
     runs-on: ${{ matrix.os }}
+    container:
+      image: ${{ matrix.use-container && format('python:{0}', matrix.python-version) || '' }}
     env:
       TOXENV: py
     steps:
-      - uses: actions/checkout@v3
-      - if: ${{ matrix.python-version == '2.7' }}
+      - if: ${{ matrix.use-container }}
+        name: Install git (containers)
+        run: apt-get update && apt-get install -y git
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # TEMPORARY: Debug git metadata
+      - if: ${{ matrix.use-container }}
+        name: Debug git metadata
         run: |
-          sudo apt-get install python-is-python2
-          curl -sSL https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
-          python get-pip.py
-        name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
-      - if: ${{ matrix.python-version != '2.7' }}
-        name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
+          git status
+          git describe --tags || echo "No tags found"
+          ls -la .git/
+      # TEMPORARY: Debug permissions
+      - if: ${{ matrix.use-container }}
+        name: Debug permissions
+        run: |
+          ls -la
+          whoami
+          id
+      # TEMPORARY: Debug directory structure
+      - if: ${{ matrix.use-container }}
+        name: Debug directory structure
+        run: |
+          pwd
+          python -c "import os; print(os.getcwd())"
+          ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//  /g' -e 's/^/  /'
+      - if: ${{ !matrix.use-container }}
+        name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }} (non-containers)
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -98,6 +117,17 @@ jobs:
       - name: Run updatezinfo.py (Unix)
         run: ./ci_tools/retry.sh python updatezinfo.py
         if: runner.os != 'Windows'
+      # TEMPORARY: Debug SCM configuration
+      - name: Debug SCM configuration
+        run: |
+          cat setup.cfg || echo "No setup.cfg found"
+          cat pyproject.toml || echo "No pyproject.toml found"
+        # TEMPORARY: debug tox
+      - name: Debug package versions
+        run: |
+          python -m pip list | grep setuptools || echo "setuptools not installed"
+          python -m pip list | grep setuptools-scm || echo "setuptools-scm not installed"
+          python -V
       - name: Run tox
         run: python -m tox
       - name: Generate coverage.xml
