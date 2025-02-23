@@ -15,6 +15,7 @@ jobs:
   test:
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: [
           "3.8",
           "3.9",
@@ -25,38 +26,32 @@ jobs:
           "pypy-2.7",
           "pypy-3.8",
         ]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        use-container: [false]
         include:
-          - python-version: "3.5"
-            os: "macos-13"
-            use-container: false
-          - python-version: "3.6"
-            os: "macos-13"
-            use-container: false
-          - python-version: "3.7"
-            os: "macos-13"
-            use-container: false
-          - python-version: "3.5"
-            os: "windows-latest"
-            use-container: false
-          - python-version: "3.6"
-            os: "windows-latest"
-            use-container: false
-          - python-version: "3.7"
-            os: "windows-latest"
-            use-container: false
-          - python-version: "2.7"
-            os: "ubuntu-latest"
+          # Older versions (3.7 and earlier) are included separately since they need
+          # special handling (ie use an older os or a container)
+          - os: "macos-13"
+            python-version: "3.5"
+          - os: "macos-13"
+            python-version: "3.6"
+          - os: "macos-13"
+            python-version: "3.7"
+          - os: "windows-latest"
+            python-version: "3.5"
+          - os: "windows-latest"
+            python-version: "3.6"
+          - os: "windows-latest"
+            python-version: "3.7"
+          - os: "ubuntu-latest"
+            python-version: "2.7"
             use-container: true
-          - python-version: "3.5"
-            os: "ubuntu-latest"
+          - os: "ubuntu-latest"
+            python-version: "3.5"
             use-container: true
-          - python-version: "3.6"
-            os: "ubuntu-latest"
+          - os: "ubuntu-latest"
+            python-version: "3.6"
             use-container: true
-          - python-version: "3.7"
-            os: "ubuntu-latest"
+          - os: "ubuntu-latest"
+            python-version: "3.7"
             use-container: true
     runs-on: ${{ matrix.os }}
     container:
