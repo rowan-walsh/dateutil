@@ -119,25 +119,8 @@ jobs:
       - name: Run updatezinfo.py (Unix)
         run: ./ci_tools/retry.sh python updatezinfo.py
         if: runner.os != 'Windows'
-      # TEMPORARY: Debug SCM configuration
-      - name: Debug SCM configuration
-        run: |
-          cat setup.cfg || echo "No setup.cfg found"
-          cat pyproject.toml || echo "No pyproject.toml found"
-        # TEMPORARY: debug tox
-      - name: Debug package versions
-        run: |
-          python -m pip list | grep setuptools || echo "setuptools not installed"
-          python -m pip list | grep setuptools-scm || echo "setuptools-scm not installed"
-          python -V
       - name: Run tox
         run: python -m tox
-        # TEMPORARY: debug tox
-      - name: Debug package versions (after tox)
-        run: |
-          python -m pip list | grep setuptools || echo "setuptools not installed"
-          python -m pip list | grep setuptools-scm || echo "setuptools-scm not installed"
-          python -V
       - name: Generate coverage.xml
         run: python -m tox -e coverage
       - name: Report coverage to Codecov
