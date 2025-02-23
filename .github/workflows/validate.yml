@@ -75,27 +75,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # TEMPORARY: Debug git metadata
-      - if: ${{ matrix.use-container }}
-        name: Debug git metadata
-        run: |
-          git status
-          git describe --tags || echo "No tags found"
-          ls -la .git/
-      # TEMPORARY: Debug permissions
-      - if: ${{ matrix.use-container }}
-        name: Debug permissions
-        run: |
-          ls -la
-          whoami
-          id
-      # TEMPORARY: Debug directory structure
-      - if: ${{ matrix.use-container }}
-        name: Debug directory structure
-        run: |
-          pwd
-          python -c "import os; print(os.getcwd())"
-          ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//  /g' -e 's/^/  /'
       - if: ${{ !matrix.use-container }}
         name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }} (non-containers)
         uses: actions/setup-python@v5
