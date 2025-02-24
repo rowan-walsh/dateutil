@@ -59,12 +59,6 @@ jobs:
     env:
       TOXENV: py
     steps:
-      - if: ${{ matrix.use-container }}
-        name: Configure git (containers)
-        # In container builds, we need to explicitly trust the workspace directory
-        # because the container runs as root while the directory is owned by the runner user
-        run: |
-          git config --global --add safe.directory ${{ github.workspace }}
       - name: Checkout code
         uses: actions/checkout@v4
       - if: ${{ !matrix.use-container }}
